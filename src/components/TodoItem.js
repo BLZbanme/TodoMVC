@@ -15,7 +15,7 @@ class TodoItem extends React.Component {
                         type="checkbox"
                     />
                     <label>{this.props.item.value}</label>
-                    <button></button>
+                    <button className="destroy"></button>
                 </div>
                 <input className="edit-input"/>
             </li>
