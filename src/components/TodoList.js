@@ -16,7 +16,17 @@ class TodoList extends React.Component {
                         this.props.todoList.map((item, index) => {
                             return (
                                 <TodoItem 
+                                    onCompleted={
+                                        (value) => {this.props.onCompleted(value)}
+                                    }
+                                    onDelete={
+                                        (value) => {this.props.onDelete(value)}
+                                    }
+                                    onChange={
+                                        (newItem) => {this.props.onChange(newItem)}
+                                    }
                                     key={index} 
+                                    index={index}
                                     item={item}     
                                 />
                             )
