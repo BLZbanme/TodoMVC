@@ -5,7 +5,8 @@ class TodoItem extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            hideInput: true
+            hideInput: true,
+            value: props.item.value
         }
     }
 
@@ -24,7 +25,36 @@ class TodoItem extends React.Component {
     }
 
     changeItem(e) {
-        console.log(e);
+        this.setState({
+            value: e.target.value
+        })
+    }
+
+    changeItemValue(e) {
+
+        let value = e.target.value;
+
+        if (!value) {
+            this.deleteItem();
+            
+        }
+        else {
+            let index = this.props.index;
+            this.props.onChange({
+                index,
+                value: value
+            })
+        }
+
+        this.setState({
+            hideInput: true
+        })
+    }
+
+    handleEnter(e) {
+        if (e.charCode === 13) {
+            this.changeItemValue(e);
+        }
     }
 
     render() {
@@ -54,9 +84,10 @@ class TodoItem extends React.Component {
                     </button>
                 </div>
                 <input className="edit-input"
-                    value={this.props.item.value}
-                    onChange={this.changeItem}
-                    onBlur={this.changeItem}
+                    value={this.state.value}
+                    onChange={(e) => this.changeItem(e)}
+                    onBlur={(e) => {this.changeItemValue(e)}}
+                    onKeyPress={(e) => this.handleEnter(e)}
                 />
             </li>
         )
