@@ -1,7 +1,7 @@
 import React from "react";
 import TheInput from "./TheInput";
 import TodoList from "./TodoList";
-
+import BodyFooter from "./BodyFooter";
 
 class Body extends React.Component {
 
@@ -14,7 +14,6 @@ class Body extends React.Component {
 
     handleValueInput(value) {
         let newArray = this.state.todoList;
-        console.log('handleValueInput', value);
         newArray.push({
             value,
             done: false
@@ -48,6 +47,14 @@ class Body extends React.Component {
         })
     }
 
+    deleteAll() {
+        const filterArray = this.state.todoList.filter(e => !e.done);
+        console.log(filterArray);
+        this.setState({
+            todoList: filterArray
+        })
+    }
+
     render() {
         return (
             <section className="body-section">
@@ -59,6 +66,10 @@ class Body extends React.Component {
                     onCompleted={(value) => {this.completeItem(value)}}
                     onDelete={(value) => {this.deleteItem(value)}}
                     onChange={(newItem) => {this.changeItem(newItem)}}
+                />
+                <BodyFooter 
+                    todoList={this.state.todoList}
+                    onDeleteAll={() => {this.deleteAll()}}
                 />
             </section>
         )

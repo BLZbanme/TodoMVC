@@ -13,6 +13,7 @@ class TheInput extends React.Component {
             let value = e.target.value;
             if (value) {
                 this.props.valueInput(value);
+                e.target.value = "";
             }
         }
     }

@@ -61,16 +61,14 @@ class TodoItem extends React.Component {
         return (
             <li 
                 className={
-                    `
-                        ${this.props.item.done ? "completed" : ""} 
-                        ${this.state.hideInput ? "" : "editing"}
-                    `
+                    `${this.props.item.done ? "completed" : ""} ${this.state.hideInput ? "" : "editing"}`
                 }>
                 <div className="view">
                     <input 
                         className="toggle-input"
                         type="checkbox"
-                        onClick={() => this.completeItem()}
+                        checked={this.props.item.done}
+                        onChange={() => this.completeItem()}
                     />
                     <label
                         onDoubleClick={() => this.showInput()}
