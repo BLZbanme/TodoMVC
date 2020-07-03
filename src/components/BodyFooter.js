@@ -7,13 +7,21 @@ class BodyFooter extends React.Component {
 
     }
 
+    renderSpan() {
+        const count = this.props.todoList.filter(e => !e.done).length;
+        if (count <= 1) {
+            return `${count} item left`
+        }
+        else {
+            return `${count} items left`
+        }
+    }
+
     render() {
         return (
             <footer  className="footer">
                 <span className="todo-count">
-                    {
-                        `${this.props.todoList.filter(e => !e.done).length} items left`
-                    }
+                    { this.renderSpan() }
                 </span>
                 <ul className="filters-ul">
                     <li><a className={this.props.hash === '' ? "selected" : ""} href="#/">All</a></li>

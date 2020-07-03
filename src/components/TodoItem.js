@@ -5,8 +5,7 @@ class TodoItem extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            hideInput: true,
-            value: props.item.value
+            isHiden: true
         }
         //该ref属性用于找到组件中双击后显示的input
         this.myInput = React.createRef();
@@ -14,7 +13,7 @@ class TodoItem extends React.Component {
 
     componentDidUpdate() {
         //双击后的input自动获取焦点
-        if (!this.state.hideInput) {
+        if (!this.state.isHiden) {
             this.myInput.current.focus();
         }
     }
@@ -29,40 +28,30 @@ class TodoItem extends React.Component {
 
     showInput() {
         this.setState({
-            hideInput: false
+            isHiden: false
         })
     }
 
     changeItem(e) {
-        this.setState({
+        this.props.onChange({
+            index: this.props.index,
             value: e.target.value
         })
     }
 
-    changeItemValue(e) {
-
-        let value = e.target.value;
-
-        if (!value) {
+    hidenInput(e) {
+        if (!e.target.value) {
             this.deleteItem();
         }
-        else {
-            let index = this.props.index;
-            this.props.onChange({
-                index,
-                value: value
-            })
-        }
-
         this.setState({
-            hideInput: true
+            isHiden: true
         })
     }
 
     handleEnter(e) {
         //很奇怪，onKeyPress监听不到esc键，改成keyDown
         if (e.keyCode === 13 || e.keyCode === 27) {
-            this.changeItemValue(e);
+            this.hidenInput(e);
         }
     }
 
@@ -70,7 +59,7 @@ class TodoItem extends React.Component {
         return (
             <li 
                 className={
-                    `${this.props.item.done ? "completed" : ""} ${this.state.hideInput ? "" : "editing"}`
+                    `${this.props.item.done ? "completed" : ""} ${this.state.isHiden ? "" : "editing"}`
                 }>
                 <div className="view">
                     <input 
@@ -92,9 +81,9 @@ class TodoItem extends React.Component {
                 </div>
                 <input className="edit-input"
                     ref={this.myInput}
-                    value={this.state.value}
+                    value={this.props.item.value}
                     onChange={(e) => this.changeItem(e)}
-                    onBlur={(e) => {this.changeItemValue(e)}}
+                    onBlur={(e) => {this.hidenInput(e)}}
                     onKeyDown={(e) => this.handleEnter(e)}
                 />
             </li>

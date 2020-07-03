@@ -4,8 +4,6 @@ import TodoList from "./TodoList";
 import BodyFooter from "./BodyFooter";
 
 //此全局变量存储beforeunload事件的函数
-let beforeunloadFunc;
-let hashchangeFunc;
 
 class Body extends React.Component {
 
@@ -24,13 +22,23 @@ class Body extends React.Component {
             todoList,
             hash
         }
+
+        this.redirectHash = this.redirectHash.bind(this);
+        this.setStorage = this.setStorage.bind(this);
+        this.handleHashChange = this.handleHashChange.bind(this);
+    }
+
+    redirectHash() {
+        if (!location.hash) {
+            location.hash = '#/';
+        }
     }
 
     setStorage() {
         localStorage.setItem('todoList', JSON.stringify(this.state.todoList));
     }
 
-    handleHashChange() {      
+    handleHashChange() {     
         let hash = (location.hash || '').split('\#\/')[1];
         this.setState({
             hash
@@ -38,15 +46,15 @@ class Body extends React.Component {
     }
 
     componentDidMount() {
-        beforeunloadFunc = this.setStorage.bind(this);
-        hashchangeFunc = this.handleHashChange.bind(this);
-        window.addEventListener("beforeunload", beforeunloadFunc);
-        window.addEventListener("hashchange", hashchangeFunc);
+        window.addEventListener("load", this.redirectHash);
+        window.addEventListener("beforeunload", this.setStorage);
+        window.addEventListener("hashchange", this.handleHashChange);
     }
 
     componentWillUnmount() {
-        window.removeEventListener("beforeunload", beforeunloadFunc);
-        window.removeEventListener("hashchange", hashchangeFunc);
+        window.addEventListener("load", this.redirectHash);
+        window.removeEventListener("beforeunload", this.setStorage);
+        window.removeEventListener("hashchange", this.handleHashChange);
     }
 
     handleValueInput(value) {

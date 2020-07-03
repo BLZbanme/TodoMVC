@@ -18,7 +18,7 @@ app.use(koaBody({
 app.use(routes);
 
 app.listen(3000, () => {
-    console.log(`server is running at http://localhoust:3000`)
+    console.log(`server is running at http://localhost:3000`)
 })
 // app.use(jwt({
 //     secret
