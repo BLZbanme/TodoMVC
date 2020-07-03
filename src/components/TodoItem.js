@@ -8,6 +8,15 @@ class TodoItem extends React.Component {
             hideInput: true,
             value: props.item.value
         }
+        //该ref属性用于找到组件中双击后显示的input
+        this.myInput = React.createRef();
+    }
+
+    componentDidUpdate() {
+        //双击后的input自动获取焦点
+        if (!this.state.hideInput) {
+            this.myInput.current.focus();
+        }
     }
 
     completeItem() {
@@ -36,7 +45,6 @@ class TodoItem extends React.Component {
 
         if (!value) {
             this.deleteItem();
-            
         }
         else {
             let index = this.props.index;
@@ -52,7 +60,8 @@ class TodoItem extends React.Component {
     }
 
     handleEnter(e) {
-        if (e.charCode === 13) {
+        //很奇怪，onKeyPress监听不到esc键，改成keyDown
+        if (e.keyCode === 13 || e.keyCode === 27) {
             this.changeItemValue(e);
         }
     }
@@ -82,10 +91,11 @@ class TodoItem extends React.Component {
                     </button>
                 </div>
                 <input className="edit-input"
+                    ref={this.myInput}
                     value={this.state.value}
                     onChange={(e) => this.changeItem(e)}
                     onBlur={(e) => {this.changeItemValue(e)}}
-                    onKeyPress={(e) => this.handleEnter(e)}
+                    onKeyDown={(e) => this.handleEnter(e)}
                 />
             </li>
         )

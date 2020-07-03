@@ -16,19 +16,22 @@ class BodyFooter extends React.Component {
                     }
                 </span>
                 <ul className="filters-ul">
-                    <li><a>All</a></li>
-                    <li><a>Active</a></li>
-                    <li><a>Completed</a></li>
+                    <li><a className={this.props.hash === '' ? "selected" : ""} href="#/">All</a></li>
+                    <li><a className={this.props.hash === 'active' ? "selected" : ""} href="#/active">Active</a></li>
+                    <li><a className={this.props.hash === 'completed' ? "selected" : ""} href="#/completed">Completed</a></li>
                 </ul>
-                <button 
-                    className="clear-completed"
-                    onClick={() => this.props.onDeleteAll()}
-                >
-                    Clear completed
-                </button>
+                {
+                    this.props.todoList.some(e => e.done) &&
+                    <button 
+                        className="clear-completed"
+                        onClick={() => this.props.onDeleteAll()}
+                    >
+                        Clear completed
+                    </button>
+                }
             </footer>
         )
-    }
+    } 
 }
 
 export default BodyFooter;

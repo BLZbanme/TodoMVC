@@ -3,13 +3,50 @@ import TheInput from "./TheInput";
 import TodoList from "./TodoList";
 import BodyFooter from "./BodyFooter";
 
+//此全局变量存储beforeunload事件的函数
+let beforeunloadFunc;
+let hashchangeFunc;
+
 class Body extends React.Component {
 
     constructor(props) {
         super(props);
+        let storage = localStorage.getItem('todoList');
+
+        let todoList = [];
+        if (storage) {
+            todoList = JSON.parse(storage);
+        }   
+
+        let hash = (location.hash || '').split('\#\/')[1];
+
         this.state = {
-            todoList: []
+            todoList,
+            hash
         }
+    }
+
+    setStorage() {
+        localStorage.setItem('todoList', JSON.stringify(this.state.todoList));
+    }
+
+    handleHashChange() {      
+        let hash = (location.hash || '').split('\#\/')[1];
+        this.setState({
+            hash
+        })
+    }
+
+    componentDidMount() {
+        beforeunloadFunc = this.setStorage.bind(this);
+        hashchangeFunc = this.handleHashChange.bind(this);
+        window.addEventListener("beforeunload", beforeunloadFunc);
+        window.addEventListener("hashchange", hashchangeFunc);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("beforeunload", beforeunloadFunc);
+        window.removeEventListener("hashchange", hashchangeFunc);
     }
 
     handleValueInput(value) {
@@ -41,7 +78,10 @@ class Body extends React.Component {
 
     changeItem(newItem) {
         let todoList = Array.from(this.state.todoList); 
-        todoList[newItem.index] = newItem;
+        todoList[newItem.index] = {
+            value: newItem.value,
+            done: false
+        };
         this.setState({
             todoList
         })
@@ -49,9 +89,28 @@ class Body extends React.Component {
 
     deleteAll() {
         const filterArray = this.state.todoList.filter(e => !e.done);
-        console.log(filterArray);
         this.setState({
             todoList: filterArray
+        })
+    }
+
+    completeAll() {
+        let tmpTodoList;
+        if (this.state.todoList.every(e => e.done)) {
+            tmpTodoList = this.state.todoList.map(e => {
+                e.done = false;
+                return e;
+            })
+        }
+        else {
+            tmpTodoList = this.state.todoList.map( e => {
+                e.done = true;
+                return e;
+            })
+        }
+
+        this.setState({
+            todoList: tmpTodoList
         })
     }
 
@@ -66,11 +125,18 @@ class Body extends React.Component {
                     onCompleted={(value) => {this.completeItem(value)}}
                     onDelete={(value) => {this.deleteItem(value)}}
                     onChange={(newItem) => {this.changeItem(newItem)}}
+                    onCompleteAll={() => {this.completeAll()}}
+                    hash={this.state.hash}
                 />
-                <BodyFooter 
-                    todoList={this.state.todoList}
-                    onDeleteAll={() => {this.deleteAll()}}
-                />
+                {
+                    this.state.todoList.length > 0 && 
+                    <BodyFooter 
+                        todoList={this.state.todoList}
+                        onDeleteAll={() => {this.deleteAll()}}
+                        hash={this.state.hash}
+                    /> 
+                }
+                
             </section>
         )
     }
