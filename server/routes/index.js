@@ -24,7 +24,7 @@ const autoCodeMap = new Map();
 router.post('/register', async ctx => {
 
     const inputeAuthCode = ctx.request.body.authCode;
-
+    console.log(ctx.session);
     if (!inputeAuthCode || (inputeAuthCode.toLowerCase() != ctx.session.autoCode)) {
         ctx.response.status = 401;
         ctx.response.body = { "message": '验证码错误' };
@@ -134,7 +134,7 @@ router.get("/getList", passport.authenticate('jwt', { session: false }),
 * @access 接口是公开
 */
 router.get("/getAuthCode",  async ctx => {
-    console.log("ctx.cookies", ctx.cookies);
+
     var authCode = svgCaptcha.create({
         inverse: false,
         fontSize: 36,
@@ -150,4 +150,4 @@ router.get("/getAuthCode",  async ctx => {
     ctx.response.status = 200;
 })
 
-module.exports = router.routes();
+module.exports = router;

@@ -1,10 +1,9 @@
 const Koa = require('koa');
 const koaBody = require('koa-body');
-const jwt = require('koa-jwt');
 const passport = require('koa-passport');
 const session = require('koa-session');
 
-const routes = require('./routes');
+const router = require('./routes');
 const { sessionConfig } = require('./config');
 require('./models/User');
 
@@ -22,8 +21,7 @@ app.use(koaBody({
 
 app.use(session(sessionConfig, app));
 
-app.use(routes);
-
+app.use(router.routes()).use(router.allowedMethods());
 app.use(passport.initialize());
 app.use(passport.session());
 
