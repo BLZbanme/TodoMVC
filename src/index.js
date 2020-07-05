@@ -1,10 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.less";
-
+import { Provider } from "react-redux";
 import MainPage from "./components/MainPage";
+import store from './store';
 
 ReactDOM.render(
-    <MainPage />,
+    <Provider store={store}>
+        <MainPage />
+    </Provider>,    
     document.getElementById('root')
 )

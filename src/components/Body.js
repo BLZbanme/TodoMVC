@@ -2,26 +2,39 @@ import React from "react";
 import TheInput from "./TheInput";
 import TodoList from "./TodoList";
 import BodyFooter from "./BodyFooter";
+import UserInfo from './UserInfo';
+import { connect } from 'react-redux';
+import axios from 'axios';
+import docCookies from '../utils/docCookies';
+import store from "../store";
 
-//此全局变量存储beforeunload事件的函数
+let storeCallBack;
 
 class Body extends React.Component {
 
     constructor(props) {
         super(props);
-        let storage = localStorage.getItem('todoList');
+        // let storage = localStorage.getItem('todoList');
 
-        let todoList = [];
-        if (storage) {
-            todoList = JSON.parse(storage);
-        }   
+        // let todoList = [];
+        // if (storage) {
+        //     todoList = JSON.parse(storage);
+        // }   
+
 
         let hash = (location.hash || '').split('\#\/')[1];
 
+        this.props.getList();
+
         this.state = {
-            todoList,
+            todoList: props.todolist || [],
             hash
         }
+
+        // this.state = {
+        //     todoList,
+        //     hash
+        // }
 
         this.redirectHash = this.redirectHash.bind(this);
         this.setStorage = this.setStorage.bind(this);
@@ -49,12 +62,27 @@ class Body extends React.Component {
         window.addEventListener("load", this.redirectHash);
         window.addEventListener("beforeunload", this.setStorage);
         window.addEventListener("hashchange", this.handleHashChange);
+        
+        storeCallBack = store.subscribe(() => {
+
+            let todoList = store.getState().todoList;
+            if (todoList && todoList.length) {
+                if (typeof todoList === 'string') {
+                    todoList =  JSON.parse(todoList);
+                }
+                this.setState({
+                    todoList
+                })
+            }
+        })
+        
     }
 
     componentWillUnmount() {
         window.addEventListener("load", this.redirectHash);
         window.removeEventListener("beforeunload", this.setStorage);
         window.removeEventListener("hashchange", this.handleHashChange);
+        storeCallBack(); 
     }
 
     handleValueInput(value) {
@@ -122,32 +150,125 @@ class Body extends React.Component {
         })
     }
 
+    saveAll() {
+        console.log('保存所有开始');
+        console.log('this.state.todoList', this.state.todoList);
+        this.props.saveAll(this.state.todoList);
+    }
+
     render() {
         return (
-            <section className="body-section">
-                <TheInput
-                    valueInput={(value) => {this.handleValueInput(value)}}
-                />
-                <TodoList 
-                    todoList={this.state.todoList}
-                    onCompleted={(value) => {this.completeItem(value)}}
-                    onDelete={(value) => {this.deleteItem(value)}}
-                    onChange={(newItem) => {this.changeItem(newItem)}}
-                    onCompleteAll={() => {this.completeAll()}}
-                    hash={this.state.hash}
-                />
-                {
-                    this.state.todoList.length > 0 && 
-                    <BodyFooter 
+            <>
+                <UserInfo onClick={() => this.saveAll()} />
+                <section className="body-section">
+                    <TheInput
+                        valueInput={(value) => {this.handleValueInput(value)}}
+                    />
+                    <TodoList 
                         todoList={this.state.todoList}
-                        onDeleteAll={() => {this.deleteAll()}}
+                        onCompleted={(value) => {this.completeItem(value)}}
+                        onDelete={(value) => {this.deleteItem(value)}}
+                        onChange={(newItem) => {this.changeItem(newItem)}}
+                        onCompleteAll={() => {this.completeAll()}}
                         hash={this.state.hash}
-                    /> 
-                }
-                
-            </section>
+                    />
+                    {
+                        this.state.todoList.length > 0 && 
+                        <BodyFooter 
+                            todoList={this.state.todoList}
+                            onDeleteAll={() => {this.deleteAll()}}
+                            hash={this.state.hash}
+                        /> 
+                    }
+                </section>
+            </>
         )
     }
 }
 
-export default Body;
+const mapStateToProps = (state) => {
+    return {
+        todolist: state.todolist || []
+    };
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        saveAll: (todolist) => {
+            dispatch({
+                type: 'save'
+            })
+
+            const promise = new Promise((resolve, reject) => {
+                const result = axios({
+                    url: "/updateList",
+                    method: "POST",
+                    data: {
+                        todolist: JSON.stringify(todolist)
+                    },
+                    headers: {'Authorization': docCookies.getItem('jwt')}
+                })
+
+                result.then(
+                    res => {
+                        dispatch({
+                            type: 'save_success',
+                            data: {
+                                todolist
+                            }
+                        })
+
+                        resolve(res);
+                    },
+                    err => {
+                        dispatch({
+                            type: 'save_fail',
+                            data: { error: err }
+                        })
+
+                        reject(err);
+                    }
+                )
+            })
+
+            return promise;
+        },
+        getList: () => {
+            dispatch({
+                type: 'getList',
+            })
+
+            const promise = new Promise((resolve, reject) => {
+                const result = axios({
+                    url: "/getList",
+                    method: "GET",
+                    headers: {'Authorization': docCookies.getItem('jwt')}
+                })
+
+                result.then(
+                    res => {
+                        dispatch({
+                            type: 'getList_success',
+                            data: res.data
+                        })
+
+                        resolve(res);
+                    },
+                    err => {
+                        dispatch({
+                            type: 'getList_fail',
+                            data: { error: err }
+                        })
+
+                        reject(err);
+                    }
+                )
+            })
+
+            return promise;
+        }
+    }
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Body);

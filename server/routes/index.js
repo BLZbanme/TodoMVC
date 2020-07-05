@@ -14,8 +14,6 @@ const validateRegisterInput = require('../validation/register');
 
 const User = require('../models/User');
 
-const autoCodeMap = new Map();
-
 /**
 * @route POST api/register
 * @desc 测试接口地址
@@ -74,6 +72,18 @@ router.post('/register', async ctx => {
 * @access 接口是公开的
 */
 router.post("/login", async ctx => {
+    console.log("login被调用了", ctx)
+    console.log("ctx.body", ctx.request.body);
+    const inputeAuthCode = ctx.request.body.authCode;
+    console.log('ctx.session', ctx.session);
+    if (!inputeAuthCode || (inputeAuthCode.toLowerCase() != ctx.session.autoCode)) {
+        ctx.response.status = 401;
+        ctx.response.body = { "message": '验证码错误' };
+        return;
+    }
+
+    console.log('111111111111111111111111');
+
     const user = await User.findOne({
         where: {
             username: ctx.request.body.username
@@ -94,7 +104,9 @@ router.post("/login", async ctx => {
             ctx.status = 200;
             ctx.body = {
                 success: true,
-                token: 'Bearer ' + token
+                token: 'Bearer ' + token,
+                username: user.username,
+                todolist: user.todolist
             }
             return;
         }
@@ -114,6 +126,7 @@ router.post("/login", async ctx => {
 router.get("/getList", passport.authenticate('jwt', { session: false }),
     async (ctx) => {
         //utils中的jwt鉴权方式中回调传入的user
+        console.log('getList', ctx);
         const user = ctx.state.user;
         if (user) {
             ctx.response.status = 200;
@@ -124,6 +137,41 @@ router.get("/getList", passport.authenticate('jwt', { session: false }),
         else {
             ctx.response.status = 401;
             ctx.response.body = {message: '用户名已失效'}
+        }
+    }
+)
+
+/**
+* @route GET api/updateList
+* @desc 用户信息接口地址 返回用户信息
+* @access 接口是私密的
+*/
+router.post("/updateList", passport.authenticate('jwt', { session: false }),
+    async (ctx) => {
+        //utils中的jwt鉴权方式中回调传入的user
+        const { todolist } = ctx.request.body;
+        console.log('todolist', todolist);
+        const user = ctx.state.user;
+        if (user) {
+            await user.update({
+                todolist
+            }, {
+                where: {
+                    username: user.username     
+                }
+            }).then(() => {
+                console.log('update!!!!!!');
+                ctx.status = 200;
+                ctx.body = { success: true }
+                return;
+            }).catch(err => {
+                ctx.status = 500;
+                ctx.body = { message: '数据库更新失败 '}
+            })
+        }
+        else {
+            ctx.status = 401;
+            ctx.body = { message: '用户名已失效 '}
         }
     }
 )

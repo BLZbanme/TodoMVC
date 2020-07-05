@@ -4,6 +4,7 @@ const passport = require('koa-passport');
 const session = require('koa-session');
 
 const router = require('./routes');
+const cors = require('koa2-cors');
 const { sessionConfig } = require('./config');
 require('./models/User');
 
@@ -19,6 +20,7 @@ app.use(koaBody({
     }
 }))
 
+app.use(cors());
 app.use(session(sessionConfig, app));
 
 app.use(router.routes()).use(router.allowedMethods());
@@ -30,8 +32,3 @@ require('./utils/passport')(passport);
 app.listen(3000, () => {
     console.log(`server is running at http://localhost:3000`)
 })
-// app.use(jwt({
-//     secret
-// }).unless({
-//     path: [/\/register/, /\/login/]
-// }))

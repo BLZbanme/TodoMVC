@@ -52,7 +52,10 @@ module.exports = {
     devServer: {
         contentBase: "./dist",
         hot: true,
-        stats: "errors-only"
+        stats: "errors-only",
+        proxy: {
+            '/': 'http://localhost:3000'
+        }
     },
     devtool: "source-map"
 }
