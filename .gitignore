@@ -22,3 +22,5 @@ admin/dist/
 client/.eslintrc.js
 admin/.eslintrc.js
 server/.eslintrc.js
+
+config.js
