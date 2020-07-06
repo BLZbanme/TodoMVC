@@ -12,11 +12,11 @@
 
 在不点击图片的情况下，验证码可以在注册后直接用于登录
 
-![1594026192037](.\pic\login.png)
+![](.\pic\login.png)
 
 正常界面：点击“退出”可以清除登陆状态，正常情况登陆状态的有效期为1小时。
 
-![1594026382301](.\pic\body.png)
+![](.\pic\body.png)
 
 
 
@@ -46,7 +46,7 @@
    //session的key及其他配置
    const sessionConfig = {
        key: '****',
-       mazAge: 5 * 60 * 1000,
+       mazAge: (5 * 60 * 1000),
        autoCommit: true,
        overwrite: true,
        httpOnly: true,
