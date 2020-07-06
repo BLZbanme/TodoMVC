@@ -103,9 +103,7 @@ router.post("/login", async ctx => {
     const password = ctx.request.body.password;
 
     if (user) {
-        console.log(password);
         var result = await bcrypt.compareSync(password, user.password);
-        console.log('result', result);
         if (result) {
             const payLoad = {
                 id: user.id,
@@ -137,7 +135,6 @@ router.post("/login", async ctx => {
 router.get("/getList", passport.authenticate('jwt', { session: false }),
     async (ctx) => {
         //utils中的jwt鉴权方式中回调传入的user
-        console.log('getList', ctx);
         const user = ctx.state.user;
         if (user) {
             ctx.response.status = 200;
@@ -161,7 +158,6 @@ router.post("/updateList", passport.authenticate('jwt', { session: false }),
     async (ctx) => {
         //utils中的jwt鉴权方式中回调传入的user
         const { todolist } = ctx.request.body;
-        console.log('todolist', todolist);
         const user = ctx.state.user;
         if (user) {
             await user.update({
@@ -171,7 +167,6 @@ router.post("/updateList", passport.authenticate('jwt', { session: false }),
                     username: user.username     
                 }
             }).then(() => {
-                console.log('update!!!!!!');
                 ctx.status = 200;
                 ctx.body = { success: true }
                 return;

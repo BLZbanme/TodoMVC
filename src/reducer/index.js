@@ -64,20 +64,17 @@ const reducer = (state = initalValue, action) => {
             }
 
         case "save_success":
-            console.log('save_success', action);
             return {
                 ...state,
                 todoList: action.data.todolist
             }
 
         case "save_fail":
-            console.log('save_fail', action);
             return {
                 ...state
             }
 
         case "getList_success":
-            console.log('getList_success', action);
             let todoListJson =  action.data.todolist;
             let tmp;
             try {
