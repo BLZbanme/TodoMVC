@@ -18,9 +18,6 @@ class UserInfo extends Component {
                     用户：{this.props.username}
                 </span>
                 <div>
-                    <button onClick={() => this.props.onClick()}>
-                        保存
-                    </button>
                     <button onClick={() => this.clearCookie()}>
                         退出
                     </button>

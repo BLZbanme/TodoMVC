@@ -10,6 +10,7 @@ class User extends Component {
         this.state = {
             username: "",
             password: "",
+            invitCode: "",
             authCode: ""
         }
     }
@@ -18,33 +19,51 @@ class User extends Component {
         this.setState({
             username: e.target.value
         })
+        this.props.removeWarn();
     }
 
     changePassword(e) {
         this.setState({
             password: e.target.value
         })
+        this.props.removeWarn();
     }
 
     changeAuthCode(e) {
         this.setState({
             authCode: e.target.value
         })
+        this.props.removeWarn();
+    }
+
+    changeInvitCode(e) {
+        this.setState({
+            invitCode: e.target.value
+        })
+        this.props.removeWarn();
     }
 
     login() {
-        console.log('1111', 111);
-        this.props.sendAction(this.state.username, this.state.password, this.state.authCode);
+        this.props.loginAction(this.state);
+    }
+
+    register() {
+        console.log('register');
+        this.props.registerAction(this.state);
     }
 
     changeImgSrc(e) {
-        e.target.src = `http://localhost:3000/getAuthCode?${Math.random()}`;
+        e.target.src = `/getAuthCode?${Math.random()}`;
     }
 
     renderWarn() {
-        if (this.props.loginWrong) {
+        if (this.props.loginMessage) {
             return (
-                div
+                <div className={this.props.registerSucces ? 'success-div' : 'warn-div'}>
+                    <p>
+                        {this.props.loginMessage}
+                    </p>
+                </div>
             )
         }
     }
@@ -61,6 +80,7 @@ class User extends Component {
                             maxLength='11'
                             value={this.state.username}
                             onChange={(e) => this.changeUsername(e)}
+                            autoComplete="off"
                         />
                     </div>
                     <div>
@@ -73,6 +93,17 @@ class User extends Component {
                             onChange={(e) => this.changePassword(e)}
                         />
                     </div>
+                    <div className='invitCode-div'>
+                        <input 
+                            type='text' 
+                            placeholder="邀请码(登录无须填写)"
+                            id="login-invitCode"
+                            maxLength='11'
+                            value={this.state.invitCode}
+                            onChange={(e) => this.changeInvitCode(e)}
+                            autoComplete="off"
+                        />
+                    </div>
                     <div className='authCode-div'>
                         <input 
                             type='text' 
@@ -81,8 +112,9 @@ class User extends Component {
                             maxLength='4'
                             value={this.state.authCode}
                             onChange={(e) => this.changeAuthCode(e)}
+                            autoComplete="off"
                         />
-                        <img onClick={(e) => this.changeImgSrc(e)} src="http://localhost:3000/getAuthCode" />
+                        <img onClick={(e) => this.changeImgSrc(e)} src="/getAuthCode" />
                     </div>
                     
                     {
@@ -93,7 +125,7 @@ class User extends Component {
                         <button onClick={() => this.login()}>
                             登录
                         </button>
-                        <button className="button-register">
+                        <button className="button-register" onClick={() => this.register()}>
                             注册
                         </button>
                     </div>
@@ -107,16 +139,16 @@ const mapStateToProps = (state) => {
     console.log('user-state', state);
     return {
         isLogin: state.isLogin,
-        loginWrong: state.loginWrong,
+        loginMessage: state.loginMessage,
+        registerSucces: state.registerSucces
     };
 }
 
 const mapDispatchToProps = dispatch => {
     return {
-        sendAction: (username, password, authCode) => {
-            dispatch({
-                type: 'login',
-            })
+        loginAction: (obj) => {
+
+            const { username, password, authCode } = obj;
 
             const promise = new Promise((resolve, reject) => {
                 axios.defaults.withCredentials = true;
@@ -124,7 +156,7 @@ const mapDispatchToProps = dispatch => {
                     url: "/login",
                     method: "POST",
                     data: {
-                        username, 
+                        username,
                         password,
                         authCode
                     }
@@ -132,19 +164,19 @@ const mapDispatchToProps = dispatch => {
 
                 result.then(
                     res => {
+                        setCookie('jwt', res.data.token, 1);
+                        setCookie('username', res.data.username, 1);
                         dispatch({
                             type: 'login_success',
                             data: res.data
                         })
-                        console.log('res', res);
-                        setCookie('jwt', res.data.token, 1);
-                        setCookie('username', res.data.username, 1);
+                        
                         resolve(res);
                     },
                     err => {
                         dispatch({
                             type: 'login_fail',
-                            data: { error: err }
+                            err
                         })
                         reject(err);
                     }
@@ -152,15 +184,56 @@ const mapDispatchToProps = dispatch => {
             })
 
             return promise;
+        },
+        registerAction: (obj) => {
+
+            const { username, password, invitCode, authCode } = obj;
+            const promise = new Promise((resolve, reject) => {
+                axios.defaults.withCredentials = true;
+                const result = axios({
+                    url: "/register",
+                    method: "POST",
+                    data: {
+                        username, 
+                        password,
+                        invitCode,
+                        authCode
+                    }
+                })
+
+                result.then(
+                    res => {
+                        dispatch({
+                            type: 'register_success',
+                            data: res.data
+                        })
+                        resolve(res);
+                    },
+                    err => {
+                        dispatch({
+                            type: 'register_fail',
+                            err
+                        })
+                        reject(err);
+                    }
+                )
+            })
+
+            return promise;
+        },
+        removeWarn: () => {
+            dispatch({
+                type: 'removeWarn'
+            })     
         }
     }
 }
 
-function setCookie(cname,cvalue,exdays) {
-    var d = new Date();
-    d.setTime(d.getTime() + (exdays*24*60*60*1000));
-    var expires = "expires=" + d.toGMTString();
-    document.cookie = cname + "=" + cvalue + "; " + expires;
+function setCookie(key, value, exHour) {
+    let now = new Date();
+    now.setTime(now.getTime() + (exHour * 60  *60 * 1000));
+    let expires = "expires=" + now.toGMTString();
+    document.cookie = key + "=" + value + "; " + expires;
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(User);

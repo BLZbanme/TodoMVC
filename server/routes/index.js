@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const passport = require('koa-passport');
 const { v4: uuidv4} = require('uuid');
 
-const { secertKey } = require('../config');
+const { secertKey, invitCode } = require('../config');
 
 const svgCaptcha = require('svg-captcha');
 
@@ -21,9 +21,17 @@ const User = require('../models/User');
 */
 router.post('/register', async ctx => {
 
-    const inputeAuthCode = ctx.request.body.authCode;
+    const inputInvitCode = ctx.request.body.invitCode;
+
+    if (!inputInvitCode || (inputInvitCode.toLowerCase() != invitCode)) {
+        ctx.response.status = 401;
+        ctx.response.body = { "message": '邀请码错误' };
+        return;
+    }
+
+    const inputAuthCode = ctx.request.body.authCode;
     console.log(ctx.session);
-    if (!inputeAuthCode || (inputeAuthCode.toLowerCase() != ctx.session.autoCode)) {
+    if (!inputAuthCode || (inputAuthCode.toLowerCase() != ctx.session.autoCode)) {
         ctx.response.status = 401;
         ctx.response.body = { "message": '验证码错误' };
         return;

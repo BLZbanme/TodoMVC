@@ -6,35 +6,17 @@ import UserInfo from './UserInfo';
 import { connect } from 'react-redux';
 import axios from 'axios';
 import docCookies from '../utils/docCookies';
-import store from "../store";
-
-let storeCallBack;
 
 class Body extends React.Component {
 
     constructor(props) {
         super(props);
-        // let storage = localStorage.getItem('todoList');
-
-        // let todoList = [];
-        // if (storage) {
-        //     todoList = JSON.parse(storage);
-        // }   
-
 
         let hash = (location.hash || '').split('\#\/')[1];
 
-        this.props.getList();
-
         this.state = {
-            todoList: props.todolist || [],
             hash
         }
-
-        // this.state = {
-        //     todoList,
-        //     hash
-        // }
 
         this.redirectHash = this.redirectHash.bind(this);
         this.setStorage = this.setStorage.bind(this);
@@ -47,8 +29,8 @@ class Body extends React.Component {
         }
     }
 
-    setStorage() {
-        localStorage.setItem('todoList', JSON.stringify(this.state.todoList));
+    setStorage(e) {
+        localStorage.setItem('todoList', JSON.stringify(this.props.todoList));
     }
 
     handleHashChange() {     
@@ -59,101 +41,73 @@ class Body extends React.Component {
     }
 
     componentDidMount() {
+        this.props.getList();
         window.addEventListener("load", this.redirectHash);
         window.addEventListener("beforeunload", this.setStorage);
         window.addEventListener("hashchange", this.handleHashChange);
-        
-        storeCallBack = store.subscribe(() => {
-
-            let todoList = store.getState().todoList;
-            if (todoList && todoList.length) {
-                if (typeof todoList === 'string') {
-                    todoList =  JSON.parse(todoList);
-                }
-                this.setState({
-                    todoList
-                })
-            }
-        })
-        
     }
 
     componentWillUnmount() {
         window.addEventListener("load", this.redirectHash);
         window.removeEventListener("beforeunload", this.setStorage);
         window.removeEventListener("hashchange", this.handleHashChange);
-        storeCallBack(); 
     }
 
     handleValueInput(value) {
-        let newArray = this.state.todoList;
+        let newArray = this.props.todoList;
         newArray.push({
             value,
             done: false
         })
-        this.setState({
-            todoList: newArray
-        })
+        this.props.saveAll(newArray);
+        this.setState({})
     }
 
     completeItem(index) {
-        let todoList = Array.from(this.state.todoList); 
+        let todoList = Array.from(this.props.todoList); 
         todoList[index].done = !todoList[index].done;
-        this.setState({
-            todoList
-        })
+        this.props.saveAll(todoList);
     }
 
     deleteItem(index) {
-        let todoList = Array.from(this.state.todoList); 
+        let todoList = Array.from(this.props.todoList); 
         todoList.splice(index, 1);
-        this.setState({
-            todoList
-        })
+        this.props.saveAll(todoList);
     }
 
     changeItem(newItem) {
-        let todoList = Array.from(this.state.todoList); 
+        let todoList = Array.from(this.props.todoList); 
         todoList[newItem.index] = {
             value: newItem.value,
             done: false
         };
-        this.setState({
-            todoList
-        })
+        this.props.saveAll(todoList);
     }
 
     deleteAll() {
-        const filterArray = this.state.todoList.filter(e => !e.done);
-        this.setState({
-            todoList: filterArray
-        })
+        const filterArray = this.props.todoList.filter(e => !e.done);
+        this.props.saveAll(filterArray);
     }
 
     completeAll() {
         let tmpTodoList;
-        if (this.state.todoList.every(e => e.done)) {
-            tmpTodoList = this.state.todoList.map(e => {
+        if (this.props.todoList.every(e => e.done)) {
+            tmpTodoList = this.props.todoList.map(e => {
                 e.done = false;
                 return e;
             })
         }
         else {
-            tmpTodoList = this.state.todoList.map( e => {
+            tmpTodoList = this.props.todoList.map( e => {
                 e.done = true;
                 return e;
             })
         }
-
-        this.setState({
-            todoList: tmpTodoList
-        })
+        this.props.saveAll(tmpTodoList);
     }
 
     saveAll() {
-        console.log('保存所有开始');
-        console.log('this.state.todoList', this.state.todoList);
-        this.props.saveAll(this.state.todoList);
+        this.props.saveAll(this.props.todoList);
     }
 
     render() {
@@ -161,11 +115,11 @@ class Body extends React.Component {
             <>
                 <UserInfo onClick={() => this.saveAll()} />
                 <section className="body-section">
-                    <TheInput
+                    <TheInput 
                         valueInput={(value) => {this.handleValueInput(value)}}
                     />
                     <TodoList 
-                        todoList={this.state.todoList}
+                        todoList={this.props.todoList}
                         onCompleted={(value) => {this.completeItem(value)}}
                         onDelete={(value) => {this.deleteItem(value)}}
                         onChange={(newItem) => {this.changeItem(newItem)}}
@@ -173,9 +127,9 @@ class Body extends React.Component {
                         hash={this.state.hash}
                     />
                     {
-                        this.state.todoList.length > 0 && 
+                        this.props.todoList.length > 0 && 
                         <BodyFooter 
-                            todoList={this.state.todoList}
+                            todoList={this.props.todoList}
                             onDeleteAll={() => {this.deleteAll()}}
                             hash={this.state.hash}
                         /> 
@@ -188,16 +142,13 @@ class Body extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        todolist: state.todolist || []
+        todoList: state.todoList
     };
 }
 
 const mapDispatchToProps = dispatch => {
     return {
         saveAll: (todolist) => {
-            dispatch({
-                type: 'save'
-            })
 
             const promise = new Promise((resolve, reject) => {
                 const result = axios({
@@ -234,9 +185,6 @@ const mapDispatchToProps = dispatch => {
             return promise;
         },
         getList: () => {
-            dispatch({
-                type: 'getList',
-            })
 
             const promise = new Promise((resolve, reject) => {
                 const result = axios({

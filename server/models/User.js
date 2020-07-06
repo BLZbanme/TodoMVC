@@ -18,7 +18,7 @@ const User = sequelize.define('users',{
         allowNull: false
     },
     todolist: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING(2048)
     }
 
 })

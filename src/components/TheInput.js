@@ -1,6 +1,5 @@
 import React from "react";
 
-
 class TheInput extends React.Component {
 
     constructor(props) {
@@ -28,5 +27,6 @@ class TheInput extends React.Component {
         )
     }
 }
+
 
 export default TheInput;
