@@ -10,6 +10,7 @@ class TheInput extends React.Component {
         //input的监听键盘事件
         if (e.charCode === 13) {
             let value = e.target.value;
+            value = value.trim();
             if (value) {
                 this.props.valueInput(value);
                 e.target.value = "";

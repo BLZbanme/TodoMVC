@@ -95,7 +95,7 @@ class User extends Component {
                     <div>
                         <input 
                             type='text' 
-                            placeholder="账号"
+                            placeholder="账号(6-11位)"
                             id="login-username"
                             maxLength='11'
                             minLength='6'
@@ -107,7 +107,7 @@ class User extends Component {
                     <div>
                         <input 
                             type='password' 
-                            placeholder="密码"
+                            placeholder="密码(6-11位)"
                             id="login-password"
                             maxLength='11'
                             minLength='6'
@@ -130,7 +130,7 @@ class User extends Component {
                     <div className='authCode-div'>
                         <input 
                             type='text' 
-                            placeholder="验证码"
+                            placeholder="验证码(4位)"
                             id="login-authCode"
                             length='4'
                             value={this.state.authCode}
