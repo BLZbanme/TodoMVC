@@ -8,6 +8,25 @@ import User from './User';
 
 class MainPage extends React.Component {
 
+    constructor(props) {
+        super(props) ;
+        this.redirectHash = this.redirectHash.bind(this);
+    }
+
+    redirectHash() {
+        if (!location.hash) {
+            location.hash = '/';
+        }
+    }
+
+    componentDidMount() {
+        window.addEventListener("load", this.redirectHash);
+    }
+
+    componentWillUnmount() {
+        window.addEventListener("load", this.redirectHash);
+    }
+
     render() {
         return (
             <div className="main-page">
@@ -21,7 +40,6 @@ class MainPage extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-    console.log('user-state', state);
     return {
         isLogin: state.isLogin
     };

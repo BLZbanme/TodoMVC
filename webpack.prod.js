@@ -1,9 +1,9 @@
 "use strict";
 
 const path = require("path");
-const webpack = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 
 
 module.exports = {
@@ -35,7 +35,6 @@ module.exports = {
         ]
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             template: path.join(__dirname, './public/index.html'),
@@ -50,6 +49,10 @@ module.exports = {
                 minifyJS: true,
                 removeComments: false
             }
+        }),
+        new OptimizeCSSAssetsPlugin({
+            assetNameRegExp: /\.css$/g,
+            cssProcessor: require("cssnano")
         })
     ],
     stats: "errors-only"

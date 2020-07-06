@@ -2,13 +2,17 @@ const Koa = require('koa');
 const koaBody = require('koa-body');
 const passport = require('koa-passport');
 const session = require('koa-session');
+const static = require('koa-static');
+
 
 const router = require('./routes');
 const cors = require('koa2-cors');
-const { sessionConfig } = require('./config');
+const { sessionConfig, serverPort } = require('./config');
 require('./models/User');
 
 const app = new Koa();
+
+app.use(static('dist'));
 
 app.keys = ['bytedance'];
 
@@ -29,6 +33,6 @@ app.use(passport.session());
 
 require('./utils/passport')(passport);
 
-app.listen(3000, () => {
-    console.log(`server is running at http://localhost:3000`)
+app.listen(serverPort, () => {
+    console.log(`server is running at http://localhost:${serverPort}`)
 })

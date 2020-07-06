@@ -4,8 +4,7 @@ import docCookies from '../utils/docCookies';
 
 class UserInfo extends Component {
 
-    clearCookie() {
-        console.log('开始清除');
+    clearCookie(e) {
         docCookies.removeItem('jwt');
         docCookies.removeItem('username');
         location.reload();

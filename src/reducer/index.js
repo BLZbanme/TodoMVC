@@ -29,6 +29,13 @@ const reducer = (state = initalValue, action) => {
                 loginMessage: "",
                 registerSucces: false
             }
+
+        case "addWarn":
+            return {
+                ...state,
+                loginMessage: action.data.loginMessage,
+                registerSucces: false
+            }    
         
         case "register_success":
             return {
@@ -53,7 +60,6 @@ const reducer = (state = initalValue, action) => {
         case "login_fail":
             return {
                 ...state,
-                isLogin: false,
                 loginMessage: action.err.response.data.message
             }
 

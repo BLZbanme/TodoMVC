@@ -18,15 +18,8 @@ class Body extends React.Component {
             hash
         }
 
-        this.redirectHash = this.redirectHash.bind(this);
         this.setStorage = this.setStorage.bind(this);
         this.handleHashChange = this.handleHashChange.bind(this);
-    }
-
-    redirectHash() {
-        if (!location.hash) {
-            location.hash = '#/';
-        }
     }
 
     setStorage(e) {
@@ -42,13 +35,11 @@ class Body extends React.Component {
 
     componentDidMount() {
         this.props.getList();
-        window.addEventListener("load", this.redirectHash);
         window.addEventListener("beforeunload", this.setStorage);
         window.addEventListener("hashchange", this.handleHashChange);
     }
 
     componentWillUnmount() {
-        window.addEventListener("load", this.redirectHash);
         window.removeEventListener("beforeunload", this.setStorage);
         window.removeEventListener("hashchange", this.handleHashChange);
     }

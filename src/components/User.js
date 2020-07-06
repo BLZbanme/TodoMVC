@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import axios from 'axios';
+import md5 from 'js-md5';
 
 
 class User extends Component {
@@ -43,13 +44,32 @@ class User extends Component {
         this.props.removeWarn();
     }
 
+    checkFormat() {
+        if (!this.state.username || this.state.username.length > 11  || this.state.username.length < 6) {
+            this.props.addWarn('用户名必须大于5位，小于11位');
+            return false;
+        }
+        if (!this.state.password || this.state.password.length > 11  || this.state.password.length < 6) {
+            this.props.addWarn('密码必须大于5位，小于11位');
+            return false;
+        }
+        if (!this.state.authCode || this.state.authCode.length != 4) {
+            this.props.addWarn('验证码必须4位');
+            return false;
+        }
+        return true;
+    }
+
     login() {
-        this.props.loginAction(this.state);
+        if (this.checkFormat()) {
+            this.props.loginAction(this.state);
+        }
     }
 
     register() {
-        console.log('register');
-        this.props.registerAction(this.state);
+        if (this.checkFormat()) {
+            this.props.registerAction(this.state);
+        }
     }
 
     changeImgSrc(e) {
@@ -78,6 +98,7 @@ class User extends Component {
                             placeholder="账号"
                             id="login-username"
                             maxLength='11'
+                            minLength='6'
                             value={this.state.username}
                             onChange={(e) => this.changeUsername(e)}
                             autoComplete="off"
@@ -89,6 +110,7 @@ class User extends Component {
                             placeholder="密码"
                             id="login-password"
                             maxLength='11'
+                            minLength='6'
                             value={this.state.password}
                             onChange={(e) => this.changePassword(e)}
                         />
@@ -99,6 +121,7 @@ class User extends Component {
                             placeholder="邀请码(登录无须填写)"
                             id="login-invitCode"
                             maxLength='11'
+                            
                             value={this.state.invitCode}
                             onChange={(e) => this.changeInvitCode(e)}
                             autoComplete="off"
@@ -109,7 +132,7 @@ class User extends Component {
                             type='text' 
                             placeholder="验证码"
                             id="login-authCode"
-                            maxLength='4'
+                            length='4'
                             value={this.state.authCode}
                             onChange={(e) => this.changeAuthCode(e)}
                             autoComplete="off"
@@ -122,10 +145,10 @@ class User extends Component {
                     }
 
                     <div className="user-button">
-                        <button onClick={() => this.login()}>
+                        <button type="button" onClick={() => this.login()}>
                             登录
                         </button>
-                        <button className="button-register" onClick={() => this.register()}>
+                        <button type="button" className="button-register" onClick={() => this.register()}>
                             注册
                         </button>
                     </div>
@@ -136,7 +159,6 @@ class User extends Component {
 }
 
 const mapStateToProps = (state) => {
-    console.log('user-state', state);
     return {
         isLogin: state.isLogin,
         loginMessage: state.loginMessage,
@@ -157,7 +179,7 @@ const mapDispatchToProps = dispatch => {
                     method: "POST",
                     data: {
                         username,
-                        password,
+                        password: md5(password),
                         authCode
                     }
                 })
@@ -195,7 +217,7 @@ const mapDispatchToProps = dispatch => {
                     method: "POST",
                     data: {
                         username, 
-                        password,
+                        password: md5(password),
                         invitCode,
                         authCode
                     }
@@ -224,6 +246,14 @@ const mapDispatchToProps = dispatch => {
         removeWarn: () => {
             dispatch({
                 type: 'removeWarn'
+            })     
+        },
+        addWarn: (loginMessage) => {
+            dispatch({
+                type: 'addWarn',
+                data: {
+                    loginMessage
+                }
             })     
         }
     }

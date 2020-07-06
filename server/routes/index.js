@@ -10,9 +10,25 @@ const { secertKey, invitCode } = require('../config');
 const svgCaptcha = require('svg-captcha');
 
 const enbcrypt = require('../utils/enbcrypt');
-const validateRegisterInput = require('../validation/register');
 
 const User = require('../models/User');
+
+const fs = require("fs");
+const path = require("path");
+
+const template = fs.readFileSync(path.join(__dirname, "../../dist/index.html"), "utf-8");
+
+/**
+* @route POST api/
+* @desc 测试接口地址
+* @access 接口是公开的
+*/
+router.get('/', async ctx => {
+    ctx.status = 200;
+    ctx.body = template;
+    return;
+})
+
 
 /**
 * @route POST api/register
@@ -22,7 +38,6 @@ const User = require('../models/User');
 router.post('/register', async ctx => {
 
     const inputInvitCode = ctx.request.body.invitCode;
-
     if (!inputInvitCode || (inputInvitCode.toLowerCase() != invitCode)) {
         ctx.response.status = 401;
         ctx.response.body = { "message": '邀请码错误' };
@@ -30,17 +45,9 @@ router.post('/register', async ctx => {
     }
 
     const inputAuthCode = ctx.request.body.authCode;
-    console.log(ctx.session);
     if (!inputAuthCode || (inputAuthCode.toLowerCase() != ctx.session.autoCode)) {
         ctx.response.status = 401;
         ctx.response.body = { "message": '验证码错误' };
-        return;
-    }
-
-    const { errors, isValid } = validateRegisterInput(ctx.request.body);
-    if (!isValid) {
-        ctx.response.status = 400;
-        ctx.response.body = errors;
         return;
     }
 
@@ -80,17 +87,12 @@ router.post('/register', async ctx => {
 * @access 接口是公开的
 */
 router.post("/login", async ctx => {
-    console.log("login被调用了", ctx)
-    console.log("ctx.body", ctx.request.body);
     const inputeAuthCode = ctx.request.body.authCode;
-    console.log('ctx.session', ctx.session);
     if (!inputeAuthCode || (inputeAuthCode.toLowerCase() != ctx.session.autoCode)) {
         ctx.response.status = 401;
         ctx.response.body = { "message": '验证码错误' };
         return;
     }
-
-    console.log('111111111111111111111111');
 
     const user = await User.findOne({
         where: {
@@ -103,6 +105,7 @@ router.post("/login", async ctx => {
     if (user) {
         console.log(password);
         var result = await bcrypt.compareSync(password, user.password);
+        console.log('result', result);
         if (result) {
             const payLoad = {
                 id: user.id,
@@ -199,8 +202,6 @@ router.get("/getAuthCode",  async ctx => {
         height: 30
     })
     ctx.session.autoCode = authCode.text.toLowerCase();
-    console.log("ctx.session", ctx.session);
-    
     ctx.response.set('Content-Type', 'image/svg+xml');
     ctx.response.body = String(authCode.data);
     ctx.response.status = 200;
